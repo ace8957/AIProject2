@@ -59,18 +59,24 @@ class SudokuSolver:
                 n += char
         return n
 
+    def get_square(self, index):
+        for x in range(0,self.MAX_LENGTH):
+            if index in self.squares[x]:
+                return x
+            
     #remove a value from the row, column, and square once it is taken
     def remove_used_value(self, index, value):
         row = index[0]
         column = index[1]
+        square = self.get_square(index)
         #remove taken number from the same row and column
         for key in self.grid.keys():
-            if key[0] == row or key[1] == column:
+            if key[0] == row or key[1] == column or square == self.get_square(key):
                 if value in self.grid.get(key) and key != index:
                     self.grid[key] = self.remove_char_from_string(self.grid.get(key), value)
 
 sd = SudokuSolver('C:\\Users\\Adam\\git\\AIProject2\\state3.txt')
 sd.parseFile()
-print(sd.squares)
+print(sd.grid)
 
 
