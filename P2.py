@@ -7,11 +7,11 @@ class SudokuSolver:
     currentNode = []
     rows = []
     columns = []
-    squars = []
+    squares = []
     statefile = ''
     def __init__(self, filename):    
         self.statefile = filename
-        
+
     def parseFile(self):
         file = open(self.statefile, 'r')
         for line in file:
@@ -30,12 +30,15 @@ class SudokuSolver:
     #which contain the values in each row, column, and square
     def updateHelperStructures(self):
         sideLength = int(math.sqrt(len(self.grid)))
+        squareSideLength = int(math.sqrt(sideLength))
         l = []
         count = 0
         self.columns = [[] for j in range(sideLength)]
-        for entry in self.grid:
-            l.append(entry)
-            self.columns[count].append(entry)
+        for i in range(0, len(self.grid)):
+            #squareColumnIndex = count / squareSideLength;
+            #squareRowIndex = sideLength / 
+            l.append(self.grid[i])
+            self.columns[count].append(self.grid[i])
             count += 1
             if count == sideLength:
                 self.rows.append(l)
@@ -62,7 +65,7 @@ class SudokuSolver:
             count += 1
         print(formatGrid)
 
-sd = SudokuSolver('C:\\Users\\Adam\\workspace\\AIProject2\\state3.txt')
+sd = SudokuSolver('C:\\Users\\Adam\\git\\AIProject2\\state3.txt')
 sd.parseFile()
 sd.updateHelperStructures()
 sd.printGrid()
