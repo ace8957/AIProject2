@@ -1,3 +1,4 @@
+import sys
 #TODO: remember to add command-line parsing for the filename
 class SudokuSolver:
 
@@ -16,6 +17,7 @@ class SudokuSolver:
                ['A7','A8','A9','B7','B8','B9','C7','C8','C9'],
                ['D7','D8','D9','E7','E8','E9','F7','F8','F9'],
                ['G7','G8','G9','H7', 'H8','H9','I7','I8','I9']]
+    recursion_count = 0
     
     def __init__(self, filename):    
         self.statefile = filename
@@ -89,10 +91,10 @@ class SudokuSolver:
             square = self.get_square(key)
             value = grid[key]
             if len(value) == 0:
-                print("Failed min length check")
+                print("Failed min length check. Offender: " + key)
                 return False
             elif len(value) > 9:
-                print("Failed max length check")
+                print("Failed max length check. Offender: " + key)
                 return False
             else:
                 #check that the number does not already exist as a final value in row, column, square
@@ -124,27 +126,36 @@ class SudokuSolver:
         return True
 
     def search(self, grid):
+        self.recursion_count += 1
+        print("Search invoked. Recursion_count: " + str(self.recursion_count))
+        if self.is_win(grid):
+            self.grid = grid
+            sys.exit
+            return True
+        elif self.is_valid_state(grid) is False:
+            return False
         potential_tiles = {}
         for key in grid.keys():
             if len(grid[key]) > 1:
                 potential_tiles[key] = grid[key]
         for key in potential_tiles.keys():
             for num in potential_tiles[key]:
+                print("Trying to solve " + key + " with " + num)
                 new_grid = grid.copy()
                 new_grid[key] = num
-                self.remove_used_value(new_grid, key, new_grid[key])
+                new_grid = self.remove_used_value(new_grid, key, new_grid[key])
                 if self.is_valid_state(new_grid):
                     if self.is_win(new_grid):
                         self.grid = new_grid
                         return True
                     return self.search(new_grid)
-                else:
-                    return False
 
-sd = SudokuSolver('C:\\Users\\Adam\\workspace\\AIProject2\\state0-1sol.txt')
+sd = SudokuSolver('C:\\Users\\Adam\\workspace\\AIProject2\\state3-0sol.txt')
 sd.parseFile()
 if sd.search(sd.grid) is False:
     print("No solution found.")
+    print("Search: " + str(sd.recursion_count))
 elif sd.is_win(sd.grid):
     print("We Won!")
+    print("Search: " + str(sd.recursion_count))
 sd.print_grid(sd.grid)
