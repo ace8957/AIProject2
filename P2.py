@@ -7,7 +7,6 @@ class SudokuSolver:
     potential_values = "123456789"
     indexes = [] #contains the row x colum index used to denote a tile
     grid = {} #contains the potential values of each of the tiles
-    #squares = [[] for x in range(0,MAX_LENGTH)]
     squares = [['A1','A2','A3','B1','B2','B3','C1','C2','C3'],
                ['D1','D2','D3','E1','E2','E3','F1','F2','F3'],
                ['G1','G2','G3','H1', 'H2','H3','I1','I2','I3'],
@@ -65,11 +64,8 @@ class SudokuSolver:
                     else:
                         self.grid[self.indexes[counter]] = self.potential_values
                     counter += 1
-        self.print_grid(self.grid)
-        print()
         for index in elim:
             self.grid = self.remove_used_value(self.grid, index, self.grid[index])
-        self.print_grid(self.grid)
 
     #remove a provided character from a string and return the new string
     def remove_char_from_string(self, s, c):
@@ -140,15 +136,15 @@ class SudokuSolver:
                 if self.is_valid_state(new_grid):
                     if self.is_win(new_grid):
                         self.grid = new_grid
-                        print("We Won!")
                         return True
                     return self.search(new_grid)
                 else:
                     return False
 
-sd = SudokuSolver('C:\\Users\\Adam\\git\\AIProject2\\state3.txt')
+sd = SudokuSolver('C:\\Users\\Adam\\workspace\\AIProject2\\state0-1sol.txt')
 sd.parseFile()
-print(sd.is_valid_state(sd.grid))
-sd.search(sd.grid)
+if sd.search(sd.grid) is False:
+    print("No solution found.")
+elif sd.is_win(sd.grid):
+    print("We Won!")
 sd.print_grid(sd.grid)
-
