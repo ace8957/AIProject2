@@ -1,9 +1,7 @@
-import math
 #TODO: remember to add command-line parsing for the filename
 class SudokuSolver:
 
     MAX_LENGTH = 9
-    
     rows = "ABCDEFGHI"
     columns = "123456789"
     potential_values = "123456789"
@@ -25,6 +23,27 @@ class SudokuSolver:
         for c in self.rows:
             for d in self.columns:
                 self.indexes.append(c+d)
+                
+    #a utility function to print a dict of potential values
+    def print_grid(self, grid):
+        print("---|---|---")
+        count = 0
+        lineCount = 0
+        totalCount = 0
+        for index in self.indexes:
+            if lineCount >= 9:
+                print()
+                count = 0
+                lineCount = 0
+            elif count >= 3:
+                print("|-", end='')
+                count = 0
+            print(grid[index] + "-", end='')
+            count += 1
+            lineCount += 1
+            totalCount += 1
+        print()
+        print("Total Count: " + str(totalCount)) 
 
     #parsing the file will also create a dict which has the potential
     #values for each square included in it
@@ -46,8 +65,11 @@ class SudokuSolver:
                     else:
                         self.grid[self.indexes[counter]] = self.potential_values
                     counter += 1
+        self.print_grid(self.grid)
+        print()
         for index in elim:
-            self.remove_used_value(index, self.grid[index])
+            self.grid = self.remove_used_value(self.grid, index, self.grid[index])
+        self.print_grid(self.grid)
 
     #remove a provided character from a string and return the new string
     def remove_char_from_string(self, s, c):
@@ -63,20 +85,70 @@ class SudokuSolver:
         for x in range(0,self.MAX_LENGTH):
             if index in self.squares[x]:
                 return x
-            
+
+    def is_valid_state(self, grid):
+        for key in grid.keys():
+            row = key[0]
+            column = key[1]
+            square = self.get_square(key)
+            value = grid[key]
+            if len(value) == 0:
+                print("Failed min length check")
+                return False
+            elif len(value) > 9:
+                print("Failed max length check")
+                return False
+            else:
+                #check that the number does not already exist as a final value in row, column, square
+                for k in grid.keys():
+                    if (row == k[0] or k[1] == column or square == self.get_square(k)) and k != key:
+                        if len(grid[k]) == 1 and grid[k] == value:
+                            print("Failed row/column/square with key " + str(key) +" and offender " + str(k))
+                            return False
+        return True
+                
     #remove a value from the row, column, and square once it is taken
-    def remove_used_value(self, index, value):
+    def remove_used_value(self, grid, index, value):
         row = index[0]
         column = index[1]
         square = self.get_square(index)
         #remove taken number from the same row and column
-        for key in self.grid.keys():
+        for key in grid.keys():
             if key[0] == row or key[1] == column or square == self.get_square(key):
-                if value in self.grid.get(key) and key != index:
-                    self.grid[key] = self.remove_char_from_string(self.grid.get(key), value)
+                if value in grid.get(key) and key != index:
+                    grid[key] = self.remove_char_from_string(grid.get(key), value)
+                    if len(grid[key]) == 1:
+                        grid = self.remove_used_value(grid, key, grid[key])
+        return grid     
+
+    def is_win(self, grid):
+        for value in grid.values():
+            if len(value) != 1:
+                return False
+        return True
+
+    def search(self, grid):
+        potential_tiles = {}
+        for key in grid.keys():
+            if len(grid[key]) > 1:
+                potential_tiles[key] = grid[key]
+        for key in potential_tiles.keys():
+            for num in potential_tiles[key]:
+                new_grid = grid.copy()
+                new_grid[key] = num
+                self.remove_used_value(new_grid, key, new_grid[key])
+                if self.is_valid_state(new_grid):
+                    if self.is_win(new_grid):
+                        self.grid = new_grid
+                        print("We Won!")
+                        return True
+                    return self.search(new_grid)
+                else:
+                    return False
 
 sd = SudokuSolver('C:\\Users\\Adam\\git\\AIProject2\\state3.txt')
 sd.parseFile()
-print(sd.grid)
-
+print(sd.is_valid_state(sd.grid))
+sd.search(sd.grid)
+sd.print_grid(sd.grid)
 
