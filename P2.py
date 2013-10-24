@@ -4,6 +4,8 @@ sys.setrecursionlimit(10000)
 class SudokuSolver:
 
     first_run = True
+    possible_solutions = []
+    original_grid = {}
     MAX_LENGTH = 9
     rows = "ABCDEFGHI"
     columns = "123456789"
@@ -24,6 +26,7 @@ class SudokuSolver:
     def __init__(self, filename):
         self.grid = {}
         self.indexes = []
+        self.possible_solutions = []
         self.statefile = filename
         for c in self.rows:
             for d in self.columns:
@@ -64,6 +67,7 @@ class SudokuSolver:
                     continue
                 else:
                     #append the character to the grid list
+                    self.original_grid[self.indexes[counter]] = char
                     if char != '.':
                         self.grid[self.indexes[counter]] = char
                         elim.append(self.indexes[counter])
@@ -132,35 +136,20 @@ class SudokuSolver:
         self.recursion_count += 1
         #print("Search invoked. Recursion_count: " + str(self.recursion_count))
         if self.is_win(grid):
+            self.possible_solutions.append(grid)
             self.grid = grid
-            return True
+            return False
         elif self.is_valid_state(grid) is False:
             return False
-        potential_tiles = {}
         for key in self.indexes:
-#             new_grid = grid.copy()
-#             if len(grid[key]) > 1:
-#                 potential_tiles[key] = grid[key]
-        #for key in potential_tiles.keys():
             if len(grid[key]) < 2:
                 continue
-#             if self.first_run:
-#                 key = 'D4'
-#                 self.first_run = False
             for num in grid[key]:
-                #print("Trying to solve " + key + " with " + num)
                 new_grid = grid.copy()
-                #print("Before:")
-                #self.print_grid(new_grid)
                 new_grid[key] = num
                 self.remove_used_value(new_grid, key, new_grid[key])
-                #print("After")
-                #self.print_grid(new_grid)
                 if self.is_valid_state(new_grid):
-#                     if self.search(new_grid):
-#                         return True
-                    if self.search(new_grid):
-                        return True
+                    self.search(new_grid)
             return False
         return False
 
@@ -169,12 +158,14 @@ sd.parseFile()
 
 print()
 print("Processing: " + sd.statefile)
-if sd.search(sd.grid) is False:
-    print("No solution found.")
-    print("Search: " + str(sd.recursion_count))
-elif sd.is_win(sd.grid):
-    print("We Won!")
-    print("Search: " + str(sd.recursion_count))
-sd.print_grid(sd.grid)
+print("Starting grid:")
+sd.print_grid(sd.original_grid)
+sd.search(sd.grid)
+if len(sd.possible_solutions) > 0:
+    print("Found " + str(len(sd.possible_solutions)) + " solutions:")
+    for solution in sd.possible_solutions:
+        sd.print_grid(solution)
+else:
+    print("No solution found!")
 print()
 print()
