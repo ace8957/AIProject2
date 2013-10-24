@@ -155,8 +155,6 @@ class SudokuSolver:
 
 sd = SudokuSolver(sys.argv[1])
 sd.parseFile()
-
-print()
 print("Processing: " + sd.statefile)
 print("Starting grid:")
 sd.print_grid(sd.original_grid)
