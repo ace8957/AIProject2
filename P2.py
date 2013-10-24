@@ -21,7 +21,9 @@ class SudokuSolver:
                ['G7','G8','G9','H7', 'H8','H9','I7','I8','I9']]
     recursion_count = 0
     
-    def __init__(self, filename):    
+    def __init__(self, filename):
+        self.grid = {}
+        self.indexes = []
         self.statefile = filename
         for c in self.rows:
             for d in self.columns:
@@ -96,14 +98,14 @@ class SudokuSolver:
                 #print("Failed min length check. Offender: " + key)
                 return False
             elif len(value) > 9:
-                print("Failed max length check. Offender: " + key)
+                #print("Failed max length check. Offender: " + key)
                 return False
             else:
                 #check that the number does not already exist as a final value in row, column, square
                 for k in grid.keys():
                     if (row == k[0] or k[1] == column or square == self.get_square(k)) and k != key:
                         if len(grid[k]) == 1 and grid[k] == value:
-                            print("Failed row/column/square with key " + str(key) +" and offender " + str(k))
+                            #print("Failed row/column/square with key " + str(key) +" and offender " + str(k))
                             return False
         return True
                 
@@ -125,31 +127,6 @@ class SudokuSolver:
             if len(value) != 1:
                 return False
         return True
-
-#     def some(self, seq):
-#         for e in seq:
-#             if e: return e
-#         return False
-# 
-#     def assign(self, values, s, d):
-#         """Eliminate all the other values (except d) from values[s] and propagate.
-#         Return values, except return False if a contradiction is detected."""
-#         other_values = values[s].replace(d, '')
-#         if all(self.remove_used_value(values, s, d2) for d2 in other_values):
-#             return values
-#         else:
-#             return False
-# 
-#     def search(self, grid):
-#         if grid is False:
-#             return False ## Failed earlier
-#         if all(len(grid[s]) == 1 for s in self.indexes):
-#             return grid ## Solved!
-#         ## Chose the unfilled square s with the fewest possibilities
-#         n,s = min((len(grid[s]), s) for s in self.indexes if len(grid[s]) > 1)
-#         return self.some(self.search(self.assign(grid.copy(), s, d))
-#                     for d in grid[s])
-
     
     def search(self, grid):
         self.recursion_count += 1
@@ -171,7 +148,7 @@ class SudokuSolver:
 #                 key = 'D4'
 #                 self.first_run = False
             for num in grid[key]:
-                print("Trying to solve " + key + " with " + num)
+                #print("Trying to solve " + key + " with " + num)
                 new_grid = grid.copy()
                 #print("Before:")
                 #self.print_grid(new_grid)
@@ -187,14 +164,17 @@ class SudokuSolver:
             return False
         return False
 
-sd = SudokuSolver('/home/awilford/code/ai/AIProject2/state2-1sol.txt')
+sd = SudokuSolver(sys.argv[1])
 sd.parseFile()
-sd.print_grid(sd.grid)
+
 print()
+print("Processing: " + sd.statefile)
 if sd.search(sd.grid) is False:
     print("No solution found.")
     print("Search: " + str(sd.recursion_count))
 elif sd.is_win(sd.grid):
     print("We Won!")
     print("Search: " + str(sd.recursion_count))
-#sd.print_grid(sd.grid)
+sd.print_grid(sd.grid)
+print()
+print()
