@@ -1,7 +1,9 @@
 import sys
+sys.setrecursionlimit(10000)
 #TODO: remember to add command-line parsing for the filename
 class SudokuSolver:
 
+    first_run = True
     MAX_LENGTH = 9
     rows = "ABCDEFGHI"
     columns = "123456789"
@@ -67,7 +69,7 @@ class SudokuSolver:
                         self.grid[self.indexes[counter]] = self.potential_values
                     counter += 1
         for index in elim:
-            self.grid = self.remove_used_value(self.grid, index, self.grid[index])
+            self.remove_used_value(self.grid, index, self.grid[index])
 
     #remove a provided character from a string and return the new string
     def remove_char_from_string(self, s, c):
@@ -91,7 +93,7 @@ class SudokuSolver:
             square = self.get_square(key)
             value = grid[key]
             if len(value) == 0:
-                print("Failed min length check. Offender: " + key)
+                #print("Failed min length check. Offender: " + key)
                 return False
             elif len(value) > 9:
                 print("Failed max length check. Offender: " + key)
@@ -114,10 +116,9 @@ class SudokuSolver:
         for key in grid.keys():
             if key[0] == row or key[1] == column or square == self.get_square(key):
                 if value in grid.get(key) and key != index:
-                    grid[key] = self.remove_char_from_string(grid.get(key), value)
+                    grid[key] = self.remove_char_from_string(grid[key], value)
                     if len(grid[key]) == 1:
-                        grid = self.remove_used_value(grid, key, grid[key])
-        return grid     
+                        self.remove_used_value(grid, key, grid[key])    
 
     def is_win(self, grid):
         for value in grid.values():
@@ -125,37 +126,75 @@ class SudokuSolver:
                 return False
         return True
 
+#     def some(self, seq):
+#         for e in seq:
+#             if e: return e
+#         return False
+# 
+#     def assign(self, values, s, d):
+#         """Eliminate all the other values (except d) from values[s] and propagate.
+#         Return values, except return False if a contradiction is detected."""
+#         other_values = values[s].replace(d, '')
+#         if all(self.remove_used_value(values, s, d2) for d2 in other_values):
+#             return values
+#         else:
+#             return False
+# 
+#     def search(self, grid):
+#         if grid is False:
+#             return False ## Failed earlier
+#         if all(len(grid[s]) == 1 for s in self.indexes):
+#             return grid ## Solved!
+#         ## Chose the unfilled square s with the fewest possibilities
+#         n,s = min((len(grid[s]), s) for s in self.indexes if len(grid[s]) > 1)
+#         return self.some(self.search(self.assign(grid.copy(), s, d))
+#                     for d in grid[s])
+
+    
     def search(self, grid):
         self.recursion_count += 1
-        print("Search invoked. Recursion_count: " + str(self.recursion_count))
+        #print("Search invoked. Recursion_count: " + str(self.recursion_count))
         if self.is_win(grid):
             self.grid = grid
-            sys.exit
             return True
         elif self.is_valid_state(grid) is False:
             return False
         potential_tiles = {}
-        for key in grid.keys():
-            if len(grid[key]) > 1:
-                potential_tiles[key] = grid[key]
-        for key in potential_tiles.keys():
-            for num in potential_tiles[key]:
+        for key in self.indexes:
+#             new_grid = grid.copy()
+#             if len(grid[key]) > 1:
+#                 potential_tiles[key] = grid[key]
+        #for key in potential_tiles.keys():
+            if len(grid[key]) < 2:
+                continue
+#             if self.first_run:
+#                 key = 'D4'
+#                 self.first_run = False
+            for num in grid[key]:
                 print("Trying to solve " + key + " with " + num)
                 new_grid = grid.copy()
+                #print("Before:")
+                #self.print_grid(new_grid)
                 new_grid[key] = num
-                new_grid = self.remove_used_value(new_grid, key, new_grid[key])
+                self.remove_used_value(new_grid, key, new_grid[key])
+                #print("After")
+                #self.print_grid(new_grid)
                 if self.is_valid_state(new_grid):
-                    if self.is_win(new_grid):
-                        self.grid = new_grid
+#                     if self.search(new_grid):
+#                         return True
+                    if self.search(new_grid):
                         return True
-                    return self.search(new_grid)
+            return False
+        return False
 
-sd = SudokuSolver('C:\\Users\\Adam\\workspace\\AIProject2\\state3-0sol.txt')
+sd = SudokuSolver('/home/awilford/code/ai/AIProject2/state2-1sol.txt')
 sd.parseFile()
+sd.print_grid(sd.grid)
+print()
 if sd.search(sd.grid) is False:
     print("No solution found.")
     print("Search: " + str(sd.recursion_count))
 elif sd.is_win(sd.grid):
     print("We Won!")
     print("Search: " + str(sd.recursion_count))
-sd.print_grid(sd.grid)
+#sd.print_grid(sd.grid)
